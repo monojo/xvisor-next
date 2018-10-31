@@ -297,6 +297,7 @@ void arch_board_fdt_fixup(void *fdt_addr)
 	}
 }
 
+// ZX: autoexec jump here
 physical_addr_t arch_board_autoexec_addr(void)
 {
 	return (V2M_NOR0 + 0xFF000);

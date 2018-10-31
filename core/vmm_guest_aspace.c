@@ -73,9 +73,11 @@ void vmm_guest_iterate_region(struct vmm_guest *guest, u32 reg_flags,
 
 	/* Find out region tree root */
 	if (reg_flags & VMM_REGION_IO) {
+		zx_printf("region io tree\n");
 		root = &aspace->reg_iotree;
 		root_lock = &aspace->reg_iotree_lock;
 	} else {
+		zx_printf("region mem tree\n");
 		root = &aspace->reg_memtree;
 		root_lock = &aspace->reg_memtree_lock;
 	}

@@ -47,6 +47,7 @@ static int cpu_vcpu_stage2_map(struct vmm_vcpu *vcpu,
 
 	memset(&pg, 0, sizeof(pg));
 
+	zx_printf("fipa: %0x\n", fipa);
 	inaddr = fipa & TTBL_L3_MAP_MASK;
 	size = TTBL_L3_BLOCK_SIZE;
 
@@ -162,6 +163,7 @@ int cpu_vcpu_data_abort(struct vmm_vcpu *vcpu,
 	case FSR_TRANS_FAULT_LEVEL1:
 	case FSR_TRANS_FAULT_LEVEL2:
 	case FSR_TRANS_FAULT_LEVEL3:
+		zx_printf("fipa %0x\n", fipa);
 		return cpu_vcpu_stage2_map(vcpu, regs, fipa);
 	case FSR_ACCESS_FAULT_LEVEL1:
 	case FSR_ACCESS_FAULT_LEVEL2:

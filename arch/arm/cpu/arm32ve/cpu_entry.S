@@ -43,6 +43,10 @@ _start:
 	 * r6 -> execution start
 	 * r7 -> execution end
 	 */
+	/* ZX: r4 physical addr
+	 * code_start & end defined in linker script
+	 * r3 image size
+	 * r5 phy end */
 	add	r4, pc, #-0x8
 	ldr	r6, __exec_start
 	ldr	r7, __exec_end
@@ -50,6 +54,7 @@ _start:
 	add	r5, r4, r3
 
 	/* Save boot reg0 (i.e. r0) */
+	/* ZX: calc boot_reg0 phy addr, then store*/
 	ldr	r3, __boot_reg0
 	sub	r3, r3, r6
 	add	r3, r3, r4
@@ -85,6 +90,7 @@ _start:
 
 	/* Hang if execution start is not 4 KB aligned */
 	mov	r0, r6
+	/* ZX: clean low 12 bits(4KB) */
 	bfc	r0, #0, #12
 	cmp	r0, r6
 	blt	_start_hang
@@ -120,6 +126,7 @@ _bss_zero:
 	bne	align_4k_boundary
 
 	/* Now check for FDT_MAGIC */
+	/* ZX: bcm2836-rpi-2-b.dtb */
 	ldr	r0, [r2]
 	ldr	r1, __fdt_magic
 	cmp	r0, r1
@@ -160,6 +167,7 @@ align_4k_boundary:
 	bfc	r0, #0, #12
 	cmp	r0, r4
 	beq	_start_mmu_init
+	/* ZX: relocate only when not 4KB aligned */
 _start_relocate:
 	/* Relocate copy function at end after load end address */
 	ldr	r0, __copy_start
@@ -204,6 +212,7 @@ _start_mmu_init:
 	ldr	sp, __hvc_stack_end
 	sub	sp, sp, r6
 	add	sp, sp, r4
+	/*ZX: ?*/
 	/* AAPCS: ensure strict 64-bits alignment for SP */
 	sub	sp, sp, #8
 	bic	sp, sp, #7

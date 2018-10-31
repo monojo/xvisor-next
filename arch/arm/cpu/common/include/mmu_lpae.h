@@ -116,6 +116,13 @@ int mmu_lpae_stage2_chttbl(u8 vmid, struct cpu_ttbl *ttbl);
 
 #endif /* !__ASSEMBLY__ */
 
+/* ZX: BLOCK SIZE = entry address size
+ * 		INDEX = index of table
+ * 		Every level 9 bits(512) entry
+ * 		INDEX_MASK = select these 9 bits
+ *
+ */
+
 /* TTBL Generic */
 #define TTBL_INITIAL_TABLE_COUNT			8
 #define TTBL_TABLE_SIZE					0x00001000

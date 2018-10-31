@@ -198,6 +198,7 @@ void do_hyp_trap(arch_regs_t *regs)
 		break;
 	case EC_TRAP_STAGE2_INST_ABORT:
 		/* Stage2 instruction abort */
+//		zx_printf("s2 inst abort\n");
 		far  = read_hifar();
 		fipa = (read_hpfar() & HPFAR_FIPA_MASK) >> HPFAR_FIPA_SHIFT;
 		fipa = fipa << HPFAR_FIPA_PAGE_SHIFT;
@@ -210,6 +211,7 @@ void do_hyp_trap(arch_regs_t *regs)
 		break;
 	case EC_TRAP_STAGE2_DATA_ABORT:
 		/* Stage2 data abort */
+//		zx_printf("s2 data abort\n");
 		far  = read_hdfar();
 		fipa = (read_hpfar() & HPFAR_FIPA_MASK) >> HPFAR_FIPA_SHIFT;
 		fipa = fipa << HPFAR_FIPA_PAGE_SHIFT;

@@ -32,6 +32,7 @@
 #include <libs/stringlib.h>
 #include <cpu_mmu_lpae.h>
 #include <mmu_lpae.h>
+#include <cpu_inline_asm.h>
 
 /* Note: we use 1/8th or 12.5% of VAPOOL memory as translation table pool.
  * For example if VAPOOL is 8 MB then translation table pool will be 1 MB
@@ -62,6 +63,7 @@ struct mmu_lpae_ctrl {
 static struct mmu_lpae_ctrl mmuctrl;
 
 u8 __attribute__ ((aligned(TTBL_TABLE_SIZE))) def_ttbl[TTBL_INITIAL_TABLE_SIZE] = { 0 };
+/* ZX: ttbl tree */
 int def_ttbl_tree[TTBL_INITIAL_TABLE_COUNT];
 
 static struct cpu_ttbl *mmu_lpae_ttbl_find(physical_addr_t tbl_pa)
@@ -652,7 +654,11 @@ u8 mmu_lpae_stage2_curvmid(void)
 
 int mmu_lpae_stage2_chttbl(u8 vmid, struct cpu_ttbl *ttbl)
 {
+//	zx_printf("ttbl: %0x\n", ttbl->tbl_pa);
 	cpu_stage2_update(ttbl->tbl_pa, vmid);
+	u64 vttbr = read_vttbr();
+	u32 pa = cpu_stage2_ttbl_pa();
+//	zx_printf("vmid: %0x, ttbl_pa: %0x, vttbr: %0llx, pa: %0x\n", vmid, ttbl->tbl_pa, vttbr, pa);
 	return VMM_OK;
 }
 

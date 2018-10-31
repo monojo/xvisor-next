@@ -497,6 +497,22 @@ int vmm_printf(const char *format, ...)
 	return retval;
 }
 
+int zx_printf(const char *format, ...)
+{
+#ifdef ZX_DEBUG
+	va_list args;
+	int retval;
+	va_start(args, format);
+	vmm_cvprintf(NULL, "ZX: ", args);
+	retval = vmm_cvprintf(NULL, format, args);
+	va_end(args);
+	return retval;
+#else
+	return 0;
+#endif
+}
+
+
 int vmm_init_printf(const char *format, ...)
 {
 	va_list args;

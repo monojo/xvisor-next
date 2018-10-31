@@ -105,6 +105,7 @@ struct vmm_region {
 #define VMM_REGION_MAP_ORDER(reg)	((reg)->map_order)
 #define VMM_REGION_MAPS_COUNT(reg)	((reg)->maps_count)
 
+// ZX: guest address space?
 struct vmm_guest_aspace {
 	struct vmm_devtree_node *node;
 	struct vmm_guest *guest;

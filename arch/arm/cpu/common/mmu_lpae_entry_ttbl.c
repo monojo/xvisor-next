@@ -181,7 +181,7 @@ DECLARE_SECTION(rodata);
 			     to_load_pa(SECTION_ADDR_START(SECTION)),	\
 			     AINDEX_NORMAL_WB,				\
 			     FALSE)
-
+/* ZX: cpu_entry.S init_mmu jump to here */
 void __attribute__ ((section(".entry")))
     _setup_initial_ttbl(virtual_addr_t load_start, virtual_addr_t load_end,
 			virtual_addr_t exec_start, virtual_addr_t exec_end)
@@ -193,10 +193,12 @@ void __attribute__ ((section(".entry")))
 	struct mmu_lpae_entry_ctrl lpae_entry = { 0, NULL, NULL, 0 };
 
 	/* Init ttbl_base, ttbl_tree, and next_ttbl */
+	// ZX: def_ttbl_tree is c logical addr, need to transfer to phy addr
 	lpae_entry.ttbl_tree =
 		(int *)to_load_pa((virtual_addr_t)&def_ttbl_tree);
 
 	for (i = 0; i < TTBL_INITIAL_TABLE_COUNT; i++) {
+		//ZX: clean data cache line by MVA
 		cpu_mmu_clean_invalidate(&lpae_entry.ttbl_tree[i]);
 		lpae_entry.ttbl_tree[i] = -1;
 	}
@@ -205,12 +207,14 @@ void __attribute__ ((section(".entry")))
 	lpae_entry.next_ttbl = (u64 *)lpae_entry.ttbl_base;
 
 	/* Init first ttbl */
+	// ZX: from ttbl base, 512 entry need to be invalidate and zero out
 	for (i = 0; i < TTBL_TABLE_ENTCNT; i++) {
 		cpu_mmu_clean_invalidate(&lpae_entry.next_ttbl[i]);
 		lpae_entry.next_ttbl[i] = 0x0ULL;
 	}
 
 	lpae_entry.ttbl_count++;
+	// ZX: now next_ttbl point to next level
 	lpae_entry.next_ttbl += TTBL_TABLE_ENTCNT;
 
 #ifdef CONFIG_DEFTERM_EARLY_PRINT

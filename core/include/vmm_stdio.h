@@ -138,6 +138,10 @@ int __printf(1, 2) vmm_printf(const char *format, ...);
 /** Print formatted string to default device at boot-time */
 int __printf(1, 2) vmm_init_printf(const char *format, ...);
 
+/** ZX: printf **/
+#define ZX_DEBUG
+int __printf(1, 2) zx_printf(const char *format, ...);
+
 /** Print contents of some data in hex format */
 void vmm_chexdump(struct vmm_chardev *cdev,
 		  u64 print_base_addr, void *data, u64 len);
