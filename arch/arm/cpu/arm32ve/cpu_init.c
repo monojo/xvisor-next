@@ -87,6 +87,7 @@ int __init arch_cpu_final_init(void)
 	return VMM_OK;
 }
 
+// ZX: jump from entry.S
 void __init cpu_init(void)
 {
 	/* Initialize VMM (APIs only available after this) */

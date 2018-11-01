@@ -249,6 +249,12 @@ void __attribute__ ((section(".entry")))
 			     AINDEX_DEVICE_nGnRE, TRUE);
 #endif
 
+	// ZX: all these mappings below are mapped into the same phy addr
+	// 1st, phy to phy, 0x2000
+	// 2nd sections exc to phy, 0x10000000 256MB
+	// 3rd exec to phy
+	// with different map addr, they have different idx
+
 	/* Map physical = logical
 	 * Note: This mapping is using at boot time only
 	 */
@@ -270,6 +276,7 @@ void __attribute__ ((section(".entry")))
 	 * not covered by read-only linker sections
 	 * Note: This mapping is used at runtime
 	 */
+	// ZX: map to the same phy as 1st
 	__setup_initial_ttbl(&lpae_entry, exec_start, exec_end, load_start,
 			     AINDEX_NORMAL_WB, TRUE);
 }

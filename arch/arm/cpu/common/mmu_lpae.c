@@ -996,6 +996,7 @@ int __init arch_cpu_aspace_primary_init(physical_addr_t *core_resv_pa,
 		if (def_ttbl_tree[i] != -1) {
 			continue;
 		}
+		// where does this ittbl_array?
 		ttbl = &mmuctrl.ittbl_array[i];
 		memset(ttbl, 0, sizeof(struct cpu_ttbl));
 		ttbl->tbl_pa = mmuctrl.ittbl_base_pa + i * TTBL_TABLE_SIZE;

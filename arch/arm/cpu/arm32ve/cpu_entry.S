@@ -221,7 +221,11 @@ _start_mmu_init:
 	mov	r1, r5
 	mov	r2, r6
 	mov	r3, r7
+	// ZX: basic init ttbl
+	// did we enable MMU for now?
+	// no
 	bl	_setup_initial_ttbl
+	// ZX: store httbr phy addr to __httbr_set
 	ldr	r0, __httbr_set
 	sub	r0, r0, r6
 	add	r0, r0, r4
@@ -271,6 +275,7 @@ _start_secondary_nopen:
 	cmp	r0, #(CPSR_MODE_HYPERVISOR)
 	blne	_start_hang
 	/* Setup Hypervisor MAIR0 & MAIR1 */
+	// ZX: for what?
 	ldr	r0, __hmair0_set
 	mcr     p15, 4, r0, c10, c2, 0
 	ldr	r0, __hmair1_set
@@ -297,6 +302,8 @@ _start_secondary_nopen:
 	bl	proc_setup
 	dsb
 	isb
+	// ZX: why here?
+	// hsctlr
 	mcr     p15, 4, r0, c1, c0, 0
 	dsb
 	isb

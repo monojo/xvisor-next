@@ -408,6 +408,7 @@ fail:
 	vmm_panic("%s: error %d\n", __func__, ret);
 }
 
+// ZX: boot cpu initialization
 static void __init init_bootcpu(void)
 {
 	int ret;
