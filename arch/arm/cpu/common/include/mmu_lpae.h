@@ -120,7 +120,10 @@ int mmu_lpae_stage2_chttbl(u8 vmid, struct cpu_ttbl *ttbl);
  * 		INDEX = index of table
  * 		Every level 9 bits(512) entry
  * 		INDEX_MASK = select these 9 bits
- *
+ * 		INDEX_SHIFT = the start pos of INDEX
+ * 		MAP_MASK = bits except addr offset
+ * 		TTBL_OUTADDR_MASK = [39:12], 40 bits addr.
+ * 		TTBL_TABLE_SIZE = 1 page, 4KB
  */
 
 /* TTBL Generic */

@@ -28,9 +28,9 @@
 
 struct mmu_lpae_entry_ctrl {
 	u32 ttbl_count;
-	int *ttbl_tree;
-	u64 *next_ttbl;
-	virtual_addr_t ttbl_base;
+	int *ttbl_tree;// ZX: store all table offset based on ttbl_base
+	u64 *next_ttbl;// point to next possible ttbl
+	virtual_addr_t ttbl_base;// base
 };
 
 extern u8 def_ttbl[];
@@ -49,42 +49,55 @@ void __attribute__ ((section(".entry")))
 	virtual_addr_t page_addr;
 
 	/* align start addresses */
+	/* ZX: just mask out addr offset, low 12 */
 	map_start &= TTBL_L3_MAP_MASK;
 	pa_start &= TTBL_L3_MAP_MASK;
 
 	page_addr = map_start;
+	// ZX: from map start to end, walk
 	while (page_addr < map_end) {
 		/* Setup level1 table */
+		// ZX: ttbl_base point to l1
 		ttbl = (u64 *) lpae_entry->ttbl_base;
+		// ZX: get index
 		index = (page_addr & TTBL_L1_INDEX_MASK) >> TTBL_L1_INDEX_SHIFT;
+		// ZX: check this entry is valid or not
 		if (ttbl[index] & TTBL_VALID_MASK) {
 			/* Find level2 table */
+			// ZX: get l2 table addr, ttbl now point to l2
 			ttbl =
 			    (u64 *) (unsigned long)(ttbl[index] &
 						    TTBL_OUTADDR_MASK);
 		} else {
+			// ZX: does not find valid entry, try init all entries in l1
 			/* Allocate new level2 table */
 			if (lpae_entry->ttbl_count == TTBL_INITIAL_TABLE_COUNT) {
 				while (1) ;	/* No initial table available */
 			}
+			// ZX: zero out all next level entries
 			for (i = 0; i < TTBL_TABLE_ENTCNT; i++) {
 				cpu_mmu_clean_invalidate(
 						&lpae_entry->next_ttbl[i]);
 				lpae_entry->next_ttbl[i] = 0x0ULL;
 			}
+			// ZX: ttbl_tree?
 			lpae_entry->ttbl_tree[lpae_entry->ttbl_count] =
 			    ((virtual_addr_t) ttbl -
 			     lpae_entry->ttbl_base) >> TTBL_TABLE_SIZE_SHIFT;
 			lpae_entry->ttbl_count++;
+			// ZX: set index to next level table addr
 			ttbl[index] |=
 			    (((virtual_addr_t) lpae_entry->next_ttbl) &
 			     TTBL_OUTADDR_MASK);
+			// ZX: low 2 set to 11
 			ttbl[index] |= (TTBL_TABLE_MASK | TTBL_VALID_MASK);
+			// ZX: let ttbl point to next level
 			ttbl = lpae_entry->next_ttbl;
 			lpae_entry->next_ttbl += TTBL_TABLE_ENTCNT;
 		}
 
 		/* Setup level2 table */
+		/* ZX: same as above */
 		index = (page_addr & TTBL_L2_INDEX_MASK) >> TTBL_L2_INDEX_SHIFT;
 		if (ttbl[index] & TTBL_VALID_MASK) {
 			/* Find level3 table */
@@ -117,9 +130,15 @@ void __attribute__ ((section(".entry")))
 		index = (page_addr & TTBL_L3_INDEX_MASK) >> TTBL_L3_INDEX_SHIFT;
 		if (!(ttbl[index] & TTBL_VALID_MASK)) {
 			/* Update level3 table */
+			/* ZX: Here does actual mapping,
+			 * if map_start = pa_start -> 1:1 mapping.
+			 * pa_start = physical base, determine where the eventual addr is
+			 * (page_addr - map_start) -> addr offset
+			 */
 			ttbl[index] =
 			    (((page_addr - map_start) + pa_start) &
 			     TTBL_OUTADDR_MASK);
+			// ZX: setting attributes below
 			ttbl[index] |= TTBL_STAGE1_LOWER_AF_MASK;
 			ttbl[index] |= (writeable) ?
 			    (TTBL_AP_SRW_U << TTBL_STAGE1_LOWER_AP_SHIFT) :
@@ -204,6 +223,7 @@ void __attribute__ ((section(".entry")))
 	}
 
 	lpae_entry.ttbl_base = to_load_pa((virtual_addr_t)&def_ttbl);
+	// ZX: next_ttbl = base
 	lpae_entry.next_ttbl = (u64 *)lpae_entry.ttbl_base;
 
 	/* Init first ttbl */
@@ -239,6 +259,7 @@ void __attribute__ ((section(".entry")))
 	 * covered by read-only linker sections
 	 * Note: This mapping is used at runtime
 	 */
+	// ZX: protect these sections from write
 	SETUP_RO_SECTION(lpae_entry, text);
 	SETUP_RO_SECTION(lpae_entry, init);
 	SETUP_RO_SECTION(lpae_entry, cpuinit);
